@@ -3,6 +3,12 @@ Adobe DPS Direct Entitlement Integration for WordPress
 
 This plugin integrates the [Adobe DPS Direct Entitlement](http://www.adobe.com/devnet/digitalpublishingsuite/articles/direct-entitlement-starter-kit.html) Server XML endpoints with WordPress. WordPress Users are extended for this functionality to allow for Adobe DPS Entitlements.
 
+## Requirements
+
+* WordPress 4.4+
+* PHP 5.5+
+* SimpleXML PHP extension enabled
+
 ## Installation
 
 1. Activate plugin in WordPress

@@ -5,6 +5,7 @@
 namespace DPS\Entitlements\Server;
 
 use DPS\Entitlements\Server;
+use DPS\Entitlements\Util;
 
 /**
  * Class Endpoint
@@ -48,8 +49,8 @@ class Endpoint {
 	 */
 	public function render() {
 
-		// Create new SimpleXMLElement object
-		$xml = simplexml_load_string( '<?xml version="1.0" encoding="UTF-8"?>' );
+		// Create new SimpleXMLElement object with temporary root
+		$xml = simplexml_load_string( '<?xml version="1.0" encoding="UTF-8"?><result />' );
 
 		// Get XML response
 		$xml = $this->build_xml_response( $xml );
@@ -62,6 +63,8 @@ class Endpoint {
 			$xml->addAttribute( 'errorMessage', $this->error->get_error_message() );
 			$xml->addAttribute( 'errorCode', $this->error->get_error_code() );
 		}
+
+		do_action( 'dps_entitlement_xml_response', $xml, $this );
 
 		// Force content type
 		header( 'Content-Type: application/xml' );

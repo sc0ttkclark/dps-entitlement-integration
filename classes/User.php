@@ -231,7 +231,7 @@ class User {
 			// Subscription is not active
 
 			// Delete auth token from user
-			$this->delete_auth_token();
+			//$this->delete_auth_token();
 
 			return Util::get_wp_error( 'subscription-inactive' );
 		}
@@ -270,7 +270,7 @@ class User {
 
 			foreach ( $issues as $issue ) {
 				// Broker must be appleStore
-				if ( ! isset( $issue->brokers->broker[0] ) || 'appleStore' !== $issue->brokers->broker[0] ) {
+				if ( ! isset( $issue->brokers->broker[0] ) || 'appleStore' != $issue->brokers->broker[0] ) {
 					continue;
 				}
 

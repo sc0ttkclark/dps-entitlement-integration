@@ -18,9 +18,7 @@ class Entitlements extends Endpoint {
 	 */
 	public function build_xml_response( $xml ) {
 
-		$result = $xml->addChild( 'result' );
-
-		$entitlements = $result->addChild( 'entitlements' );
+		$entitlements = $xml->addChild( 'entitlements' );
 
 		// v2 of Entitlements uses $_POST
 		$is_v2 = false;

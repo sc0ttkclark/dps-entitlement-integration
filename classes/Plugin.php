@@ -10,22 +10,35 @@ namespace DPS\Entitlements;
 class Plugin extends Singleton {
 
 	/**
+	 * @var Singleton|Plugin|Server|Util Singleton instance
+	 */
+	protected static $instance;
+
+	/**
 	 * Initialize the class
 	 */
 	protected function __construct() {
 
-		add_action( 'init', array( $this, 'init_server' ) );
+		add_action( 'init', array( $this, 'add_rewrite_rule' ) );
+		add_action( 'pre_get_posts', array( $this, 'init_server' ) );
 		add_filter( 'query_vars', array( $this, 'add_dps_query_var' ) );
 		add_action( 'dps_entitlement_server_register_endpoints', array( $this, 'register_endpoints' ) );
 
 	}
 
 	/**
-	 * Add rewrite rule and run DPS Entitlements Server
+	 * Add rewrite rule for DPS Entitlements Server
+	 */
+	public function add_rewrite_rule() {
+
+		add_rewrite_rule( 'dps-api/([^/]+)', 'index.php?dps_endpoint=$matches[1]', 'top' );
+
+	}
+
+	/**
+	 * Run DPS Entitlements Server
 	 */
 	public function init_server() {
-
-		add_rewrite_rule( 'dps-api/([^/]+)', 'index.php?dps_endpoint=$matches[1]' );
 
 		$endpoint = get_query_var( 'dps_endpoint' );
 
@@ -35,10 +48,18 @@ class Plugin extends Singleton {
 			require_once DPS_ENTITLEMENTS_DIR . 'classes/User.php';
 			require_once DPS_ENTITLEMENTS_DIR . 'classes/Util.php';
 
-			$fulfillment_account_id = get_option( 'dps_fulfillment_account_id' );
+			$fulfillment_account_id = '';
+
+			if ( defined( 'DPS_FULFILLMENT_ACCOUNT_ID' ) ) {
+				$fulfillment_account_id = DPS_FULFILLMENT_ACCOUNT_ID;
+			}
+
+			$fulfillment_account_id = get_option( 'dps_fulfillment_account_id', $fulfillment_account_id );
 
 			$server = Server::get_instance( $fulfillment_account_id );
 			$server->render_endpoint( $endpoint );
+
+			die();
 		}
 
 	}

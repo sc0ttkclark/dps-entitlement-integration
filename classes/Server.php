@@ -10,6 +10,11 @@ namespace DPS\Entitlements;
 class Server extends Singleton {
 
 	/**
+	 * @var Singleton|Plugin|Server|Util Singleton instance
+	 */
+	protected static $instance;
+
+	/**
 	 * @var string Entitlement Fulfillment Account ID
 	 */
 	public static $fulfillment_account_id;
@@ -101,8 +106,10 @@ class Server extends Singleton {
 		// Get endpoint class name
 		$endpoint_class = $this->endpoints[ $rewrite_path ];
 
+		$endpoint_class_full = '\\DPS\\Entitlements\\Server\\Endpoint\\' . $endpoint_class;
+
 		// If class doesn't exist, attempt to autoload
-		if ( ! class_exists( $endpoint_class ) ) {
+		if ( ! class_exists( $endpoint_class_full ) ) {
 			$class_file = DPS_ENTITLEMENTS_DIR . 'classes/Server/Endpoint/' . $endpoint_class . '.php';
 
 			// If file exists, include it
@@ -112,26 +119,64 @@ class Server extends Singleton {
 		}
 
 		// If class exists store it
-		if ( ! class_exists( $endpoint_class ) ) {
+		if ( ! class_exists( $endpoint_class_full ) ) {
 			// Endpoint class does not exist
 			return false;
 		}
 
-		$this->endpoints[ $rewrite_path ] = new $endpoint_class;
+		$this->endpoints[ $rewrite_path ] = new $endpoint_class_full;
 
 		return $this->endpoints[ $rewrite_path ];
 
 	}
 
 	/**
-	 * Render endpoint
+	 * Render endpoint from rewrite path
 	 *
-	 * @param string $endpoint
+	 * @param string $rewrite_path
 	 */
-	public function render_endpoint( $endpoint ) {
+	public function render_endpoint( $rewrite_path ) {
 
 		$endpoint = $this->get_endpoint( $rewrite_path );
-		$endpoint->render();
+
+		if ( $endpoint ) {
+			$endpoint->render();
+
+			die();
+		} else {
+			self::send_error( 'invalid-endpoint' );
+		}
+
+	}
+
+	/**
+	 * Send XML error
+	 *
+	 * @param string $error_code
+	 * @param int    $response_code
+	 */
+	public static function send_error( $error_code, $response_code = null ) {
+
+		if ( null === $response_code ) {
+			$response_code = self::HTTP_ERROR;
+		}
+
+		$error = Util::get_wp_error( $error_code );
+
+		$xml = simplexml_load_string( '<?xml version="1.0" encoding="UTF-8"?><result />' );
+
+		// Add response code
+		$xml->addAttribute( 'httpResponseCode', $response_code );
+		$xml->addAttribute( 'errorMessage', $error->get_error_message() );
+		$xml->addAttribute( 'errorCode', $error->get_error_code() );
+
+		do_action( 'dps_entitlement_xml_error_response', $xml );
+
+		// Force content type
+		header( 'Content-Type: application/xml' );
+
+		// Export object to XML
+		echo $xml->asXML();
 
 		die();
 

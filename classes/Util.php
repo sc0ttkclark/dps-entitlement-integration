@@ -10,6 +10,11 @@ namespace DPS\Entitlements;
 class Util extends Singleton {
 
 	/**
+	 * @var Singleton|Plugin|Server|Util Singleton instance
+	 */
+	protected static $instance;
+
+	/**
 	 * @var array Messages stored here mainly for testing purposes
 	 */
 	public static $messages = array();
@@ -21,6 +26,8 @@ class Util extends Singleton {
 
 		// DPS
 		self::$messages['dps-connection-failed'] = __( 'Cannot connect to DPS fulfillment server', 'dps-entitlement-integration' );
+		self::$messages['server-error']          = __( 'Server error', 'dps-entitlement-integration' );
+		self::$messages['invalid-endpoint']      = __( 'Invalid endpoint', 'dps-entitlement-integration' );
 
 		// Auth token
 		self::$messages['auth-token-missing'] = __( 'Authentication token is required', 'dps-entitlement-integration' );
@@ -52,6 +59,10 @@ class Util extends Singleton {
 	 * @return \WP_Error
 	 */
 	public static function get_wp_error( $code, $message = '' ) {
+
+		if ( empty( self::$messages ) ) {
+			Util::setup_messages();
+		}
 
 		if ( isset( self::$messages[ $code ] ) ) {
 			$message = self::$messages[ $code ];

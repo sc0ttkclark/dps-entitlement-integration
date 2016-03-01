@@ -12,7 +12,7 @@ class Singleton {
 	/**
 	 * @var Singleton|Plugin|Server|Util Singleton instance
 	 */
-	private static $instance;
+	protected static $instance;
 
 	/**
 	 * Initialize the class
@@ -31,17 +31,8 @@ class Singleton {
 	public static function get_instance() {
 
 		if ( ! static::$instance ) {
-			// Get called class name
-			$class_name = get_called_class();
-
-			// Get args passed into call
-			$args = func_get_args();
-
-			// Build reflection class for passing dynamic args
-			$reflect = new \ReflectionClass( $class_name );
-
 			// Create new instance of class and pass dynamic args
-			static::$instance = $reflect->newInstanceArgs( $args );
+			static::$instance = new static( func_get_arg(0), func_get_arg(1) );
 		}
 
 		return static::$instance;
